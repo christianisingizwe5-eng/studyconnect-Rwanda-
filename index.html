@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>StudyConnect Rwanda</title>
+<title>www.studyconnectrwanda.com</title>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:#f6f8fc;color:#172033}
 button,input,textarea,select{font:inherit}button{cursor:pointer;border:0}.hidden{display:none!important}
@@ -29,7 +29,7 @@ table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:11px;bor
 
 <div id="auth" class="auth">
 <div class="authbox">
-<h1>📚 StudyConnect Rwanda</h1>
+<h1>📚 www.studyconnectrwanda.com</h1>
 <p class="muted">Learn online. Practice. Connect with teachers.</p>
 <label>Full name</label><input id="authName" placeholder="Your name">
 <label>Account type</label><select id="authRole"><option>Student</option><option>Teacher</option><option>Admin</option></select>
@@ -40,7 +40,7 @@ table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:11px;bor
 
 <div id="app" class="hidden">
 <header class="top">
-<div class="logo">📚 StudyConnect Rwanda</div>
+<div class="logo">📚 www.studyconnectrwanda.com</div>
 <div>
 <span id="userMini"></span>
 <button onclick="logout()">Logout</button>
@@ -189,7 +189,7 @@ function finishQuiz(){let correct=questions.reduce((n,q,i)=>n+(answers[i]===q[2]
 function renderBooks(){let canEdit=current&&(current.role==="Teacher"||current.role==="Admin");document.getElementById("bookGrid").innerHTML=books.length?books.map((b,i)=>`<div class="card course"><span class="badge">${b.subject||"General"}</span><h3>${b.title}</h3><p class="muted">By ${b.author||"Unknown"}</p><p>${b.description||""}</p>${b.link?`<a href="${b.link}" target="_blank" class="btn">Open book</a>`:""}${canEdit?` <button class="btn red" onclick="deleteBook(${i})">Delete</button>`:""}</div>`).join(""):"<p class='muted'>No books added yet.</p>";let editor=document.getElementById("bookEditor");if(canEdit){editor.classList.remove("hidden");editor.innerHTML=`<div class="card"><h2>📚 Add a Book</h2><label>Book title</label><input id="bookTitle" placeholder="e.g. Introduction to Physics"><label>Author</label><input id="bookAuthor" placeholder="Author name"><label>Subject</label><input id="bookSubject" placeholder="e.g. Physics"><label>Description</label><textarea id="bookDescription" rows="3" placeholder="Short description..."></textarea><label>Link (URL to read online)</label><input id="bookLink" placeholder="https://..."><button class="btn green" onclick="addBook()">Add book</button></div>`}else{editor.classList.add("hidden")}}
 function addBook(){let title=document.getElementById("bookTitle").value.trim(),author=document.getElementById("bookAuthor").value.trim(),subject=document.getElementById("bookSubject").value.trim(),description=document.getElementById("bookDescription").value.trim(),link=document.getElementById("bookLink").value.trim();if(!title)return alert("Enter a book title.");books.push({title,author,subject,description,link});localStorage.setItem("scr_books",JSON.stringify(books));renderBooks();document.getElementById("bookTitle").value=document.getElementById("bookAuthor").value=document.getElementById("bookSubject").value=document.getElementById("bookDescription").value=document.getElementById("bookLink").value=""}
 function deleteBook(i){if(!confirm("Delete this book?"))return;books.splice(i,1);localStorage.setItem("scr_books",JSON.stringify(books));renderBooks()}
-function renderChat(){if(!chat.length)chat=[{name:"Teacher",text:"Welcome to StudyConnect Rwanda. How can I help you?"}];document.getElementById("chat").innerHTML=chat.map(m=>`<div class="bubble ${m.name===current.name?"mine":""}"><b>${m.name}</b><br>${m.text}</div>`).join("");let el=document.getElementById("chat");el.scrollTop=el.scrollHeight}
+function renderChat(){if(!chat.length)chat=[{name:"Teacher",text:"Welcome to www.studyconnectrwanda.com. How can I help you?"}];document.getElementById("chat").innerHTML=chat.map(m=>`<div class="bubble ${m.name===current.name?"mine":""}"><b>${m.name}</b><br>${m.text}</div>`).join("");let el=document.getElementById("chat");el.scrollTop=el.scrollHeight}
 function sendChat(){let t=document.getElementById("chatInput").value.trim();if(!t)return;chat.push({name:current.name,text:t});localStorage.setItem("scr_chat",JSON.stringify(chat));document.getElementById("chatInput").value="";renderChat()}
 function renderProfile(){document.getElementById("profileName").value=current.name;document.getElementById("profileRole").value=current.role;document.getElementById("profileAbout").value=current.about||""}
 function saveProfile(){current.name=document.getElementById("profileName").value.trim()||current.name;current.about=document.getElementById("profileAbout").value;localStorage.setItem("scr_current",JSON.stringify(current));let i=accounts.findIndex(a=>a.name===current.name);if(i>=0)accounts[i]=current;else accounts.push(current);localStorage.setItem("scr_accounts",JSON.stringify(accounts));document.getElementById("userMini").textContent=current.name+" · "+current.role;alert("Profile saved.")}
