@@ -52,6 +52,7 @@ table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:11px;bor
 <button onclick="openPage('courses')" id="nav-courses">📚 Courses</button>
 <button onclick="openPage('assignments')" id="nav-assignments">📝 Assignments</button>
 <button onclick="openPage('quiz')" id="nav-quiz">🧠 Quiz</button>
+<button onclick="openPage('books')" id="nav-books">📖 Books</button>
 <button onclick="openPage('messages')" id="nav-messages">💬 Messages</button>
 <button onclick="openPage('profile')" id="nav-profile">👤 Profile</button>
 <button onclick="openPage('teacher')" id="nav-teacher">👨‍🏫 Teacher tools</button>
@@ -82,6 +83,13 @@ table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:11px;bor
 
 <section id="quiz" class="page">
 <div class="card"><h2>🧠 Practice Quiz</h2><p class="muted">Choose an answer for each question, then submit.</p><div id="quizBox"></div></div>
+<div id="quizEditor" class="hidden"></div>
+</section>
+
+<section id="books" class="page">
+<div class="card"><h2>📖 Online Books</h2><p class="muted">Browse reading materials shared by your teachers.</p></div>
+<div id="bookGrid" class="grid"></div>
+<div id="bookEditor" class="hidden"></div>
 </section>
 
 <section id="messages" class="page">
@@ -108,6 +116,7 @@ table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:11px;bor
 <div class="card"><b>Registered accounts</b><div class="stat" id="adminUsers">0</div></div>
 <div class="card"><b>Published courses</b><div class="stat" id="adminCourses">0</div></div>
 <div class="card"><b>Messages</b><div class="stat" id="adminMessages">0</div></div>
+<div class="card"><b>Books</b><div class="stat" id="adminBooks">0</div></div>
 </div>
 <button class="btn red" onclick="resetData()">Reset demo data</button>
 </div></section>
@@ -125,13 +134,15 @@ const assignments=[
 ["Physics","State Ohm's law.","Write the formula relating voltage, current and resistance."],
 ["English","Write a present-perfect sentence.","Use have/has + past participle."]
 ];
-const questions=[
+const defaultQuestions=[
 ["What is 2 × 5?",["7","10","12","15"],1],
 ["A neutral substance has approximately which pH?",["1","5","7","14"],2],
 ["Choose the present perfect form.",["I finish","I finished","I have finished","I finishing"],2],
 ["Ohm's law is:",["V = IR","V = I/R","I = VR","R = VI"],0],
 ["What is 10 ÷ 2?",["2","4","5","8"],2]
 ];
+let questions=JSON.parse(localStorage.getItem("scr_questions")||"null")||JSON.parse(JSON.stringify(defaultQuestions));
+let books=JSON.parse(localStorage.getItem("scr_books")||"[]");
 let current=JSON.parse(localStorage.getItem("scr_current")||"null");
 let courses=JSON.parse(localStorage.getItem("scr_courses")||"null")||defaultCourses;
 let score=Number(localStorage.getItem("scr_score")||0);
@@ -160,24 +171,32 @@ function openPage(id){
  document.getElementById(id).classList.add("active");
  document.querySelectorAll(".side button").forEach(b=>b.classList.remove("active"));
  let n=document.getElementById("nav-"+id);if(n)n.classList.add("active");
- if(id==="dashboard")renderDashboard();if(id==="courses")renderCourses();if(id==="assignments")renderAssignments();if(id==="quiz")renderQuiz();if(id==="messages")renderChat();if(id==="profile")renderProfile();if(id==="teacher")renderTeacher();if(id==="admin")renderAdmin();
+ if(id==="dashboard")renderDashboard();if(id==="courses")renderCourses();if(id==="assignments")renderAssignments();if(id==="quiz")renderQuiz();if(id==="books")renderBooks();if(id==="messages")renderChat();if(id==="profile")renderProfile();if(id==="teacher")renderTeacher();if(id==="admin")renderAdmin();
 }
 function renderDashboard(){document.getElementById("welcome").textContent="Hello, "+current.name+" 👋";document.getElementById("statCourses").textContent=courses.length;document.getElementById("statAssign").textContent=assignments.length;document.getElementById("statScore").textContent=score+"%";document.getElementById("statStatus").textContent=score>=50?"Progressing":"Starting"}
 function renderCourses(){document.getElementById("courseGrid").innerHTML=courses.map((c,i)=>`<div class="card course"><span class="badge">${c.subject}</span><h3>${c.title}</h3><p class="muted">Teacher: ${c.teacher}</p><p>${c.content}</p><button class="btn" onclick="openLesson(${i})">Open lesson</button></div>`).join("")}
 function openLesson(i){alert("Lesson opened:\\n\\n"+courses[i].title+"\\n\\n"+courses[i].content)}
 function renderAssignments(){document.getElementById("assignmentGrid").innerHTML=assignments.map((a,i)=>`<div class="card"><span class="badge">${a[0]}</span><h3>${a[1]}</h3><p>${a[2]}</p><textarea id="answer${i}" rows="3" placeholder="Type your answer..."></textarea><button class="btn" onclick="submitAssignment(${i})">Submit assignment</button> <span id="assignStatus${i}" class="muted"></span></div>`).join("")}
 function submitAssignment(i){let x=document.getElementById("answer"+i).value.trim();if(!x)return alert("Write your answer first.");localStorage.setItem("scr_assign_"+i,x);document.getElementById("assignStatus"+i).textContent="✓ Submitted"}
-function renderQuiz(){answers={};document.getElementById("quizBox").innerHTML=questions.map((q,i)=>`<div class="card"><b>${i+1}. ${q[0]}</b>${q[1].map((o,j)=>`<button class="quizopt" onclick="choose(${i},${j},this)">${o}</button>`).join("")}</div>`).join("")+`<button class="btn" onclick="finishQuiz()">Submit quiz</button> <b id="quizResult"></b>`}
+function renderQuiz(){answers={};let canEdit=current&&(current.role==="Teacher"||current.role==="Admin");document.getElementById("quizBox").innerHTML=questions.map((q,i)=>`<div class="card"><b>${i+1}. ${q[0]}</b>${q[1].map((o,j)=>`<button class="quizopt" onclick="choose(${i},${j},this)">${o}</button>`).join("")}</div>`).join("")+`<button class="btn" onclick="finishQuiz()">Submit quiz</button> <b id="quizResult"></b>`;let editor=document.getElementById("quizEditor");if(canEdit){editor.classList.remove("hidden");editor.innerHTML=renderQuizEditor()}else{editor.classList.add("hidden")}}
+function renderQuizEditor(){let list=questions.map((q,i)=>`<div class="card" style="border-left:4px solid #155eef"><b>Q${i+1}: ${q[0]}</b><p class="muted" style="margin:5px 0">Options: ${q[1].join(" · ")}<br>Correct: <b>${q[1][q[2]]}</b></p><button class="btn secondary" onclick="editQuestion(${i})">Edit</button> <button class="btn red" onclick="deleteQuestion(${i})">Delete</button></div>`).join("");return`<div class="card"><h2>✏️ Manage Quiz Questions</h2><p class="muted">Add, edit, or remove quiz questions.</p>${list||"<p class='muted'>No questions yet.</p>"}<h3>Add / Edit Question</h3><input id="qText" placeholder="Question text"><input id="qOpt0" placeholder="Option 1"><input id="qOpt1" placeholder="Option 2"><input id="qOpt2" placeholder="Option 3"><input id="qOpt3" placeholder="Option 4"><label>Correct answer</label><select id="qCorrect"><option value="0">Option 1</option><option value="1">Option 2</option><option value="2">Option 3</option><option value="3">Option 4</option></select><button class="btn green" onclick="saveQuestion()">Save question</button></div>`}
+let editingQuestionIndex=-1;
+function editQuestion(i){editingQuestionIndex=i;let q=questions[i];document.getElementById("qText").value=q[0];for(let j=0;j<4;j++)document.getElementById("qOpt"+j).value=q[1][j]||"";document.getElementById("qCorrect").value=q[2];document.getElementById("qText").scrollIntoView()}
+function deleteQuestion(i){if(!confirm("Delete this question?"))return;questions.splice(i,1);localStorage.setItem("scr_questions",JSON.stringify(questions));renderQuiz()}
+function saveQuestion(){let text=document.getElementById("qText").value.trim();let opts=[0,1,2,3].map(j=>document.getElementById("qOpt"+j).value.trim());let correct=Number(document.getElementById("qCorrect").value);if(!text)return alert("Enter question text.");if(opts.some(o=>!o))return alert("Fill all 4 options.");let q=[text,opts,correct];if(editingQuestionIndex>=0){questions[editingQuestionIndex]=q;editingQuestionIndex=-1}else{questions.push(q)}localStorage.setItem("scr_questions",JSON.stringify(questions));renderQuiz()}
 function choose(i,j,b){answers[i]=j;b.parentElement.querySelectorAll(".quizopt").forEach(x=>x.classList.remove("selected"));b.classList.add("selected")}
 function finishQuiz(){let correct=questions.reduce((n,q,i)=>n+(answers[i]===q[2]?1:0),0);score=Math.round(correct/questions.length*100);localStorage.setItem("scr_score",score);document.getElementById("quizResult").textContent="  Score: "+correct+"/"+questions.length+" ("+score+"%)";renderDashboard();renderTeacher()}
+function renderBooks(){let canEdit=current&&(current.role==="Teacher"||current.role==="Admin");document.getElementById("bookGrid").innerHTML=books.length?books.map((b,i)=>`<div class="card course"><span class="badge">${b.subject||"General"}</span><h3>${b.title}</h3><p class="muted">By ${b.author||"Unknown"}</p><p>${b.description||""}</p>${b.link?`<a href="${b.link}" target="_blank" class="btn">Open book</a>`:""}${canEdit?` <button class="btn red" onclick="deleteBook(${i})">Delete</button>`:""}</div>`).join(""):"<p class='muted'>No books added yet.</p>";let editor=document.getElementById("bookEditor");if(canEdit){editor.classList.remove("hidden");editor.innerHTML=`<div class="card"><h2>📚 Add a Book</h2><label>Book title</label><input id="bookTitle" placeholder="e.g. Introduction to Physics"><label>Author</label><input id="bookAuthor" placeholder="Author name"><label>Subject</label><input id="bookSubject" placeholder="e.g. Physics"><label>Description</label><textarea id="bookDescription" rows="3" placeholder="Short description..."></textarea><label>Link (URL to read online)</label><input id="bookLink" placeholder="https://..."><button class="btn green" onclick="addBook()">Add book</button></div>`}else{editor.classList.add("hidden")}}
+function addBook(){let title=document.getElementById("bookTitle").value.trim(),author=document.getElementById("bookAuthor").value.trim(),subject=document.getElementById("bookSubject").value.trim(),description=document.getElementById("bookDescription").value.trim(),link=document.getElementById("bookLink").value.trim();if(!title)return alert("Enter a book title.");books.push({title,author,subject,description,link});localStorage.setItem("scr_books",JSON.stringify(books));renderBooks();document.getElementById("bookTitle").value=document.getElementById("bookAuthor").value=document.getElementById("bookSubject").value=document.getElementById("bookDescription").value=document.getElementById("bookLink").value=""}
+function deleteBook(i){if(!confirm("Delete this book?"))return;books.splice(i,1);localStorage.setItem("scr_books",JSON.stringify(books));renderBooks()}
 function renderChat(){if(!chat.length)chat=[{name:"Teacher",text:"Welcome to StudyConnect Rwanda. How can I help you?"}];document.getElementById("chat").innerHTML=chat.map(m=>`<div class="bubble ${m.name===current.name?"mine":""}"><b>${m.name}</b><br>${m.text}</div>`).join("");let el=document.getElementById("chat");el.scrollTop=el.scrollHeight}
 function sendChat(){let t=document.getElementById("chatInput").value.trim();if(!t)return;chat.push({name:current.name,text:t});localStorage.setItem("scr_chat",JSON.stringify(chat));document.getElementById("chatInput").value="";renderChat()}
 function renderProfile(){document.getElementById("profileName").value=current.name;document.getElementById("profileRole").value=current.role;document.getElementById("profileAbout").value=current.about||""}
 function saveProfile(){current.name=document.getElementById("profileName").value.trim()||current.name;current.about=document.getElementById("profileAbout").value;localStorage.setItem("scr_current",JSON.stringify(current));let i=accounts.findIndex(a=>a.name===current.name);if(i>=0)accounts[i]=current;else accounts.push(current);localStorage.setItem("scr_accounts",JSON.stringify(accounts));document.getElementById("userMini").textContent=current.name+" · "+current.role;alert("Profile saved.")}
 function publishCourse(){if(current.role!=="Teacher"&&current.role!=="Admin")return alert("Only Teacher/Admin accounts can publish.");let t=document.getElementById("newCourseTitle").value.trim(),s=document.getElementById("newCourseSubject").value.trim(),c=document.getElementById("newCourseContent").value.trim();if(!t||!s||!c)return alert("Fill all fields.");courses.push({title:t,subject:s,teacher:current.name,content:c});localStorage.setItem("scr_courses",JSON.stringify(courses));document.getElementById("newCourseTitle").value=document.getElementById("newCourseSubject").value=document.getElementById("newCourseContent").value="";alert("Course published.");renderTeacher()}
 function renderTeacher(){let students=accounts.filter(a=>a.role==="Student");document.getElementById("resultsTable").innerHTML=(students.length?students:[{name:"No student account yet",role:"Student"}]).map(s=>`<tr><td>${s.name}</td><td>${s.role}</td><td>${score}%</td></tr>`).join("")}
-function renderAdmin(){document.getElementById("adminUsers").textContent=accounts.length;document.getElementById("adminCourses").textContent=courses.length;document.getElementById("adminMessages").textContent=chat.length}
-function resetData(){if(!confirm("Reset all demo data?"))return;["scr_courses","scr_score","scr_accounts","scr_chat","scr_current"].forEach(k=>localStorage.removeItem(k));location.reload()}
+function renderAdmin(){document.getElementById("adminUsers").textContent=accounts.length;document.getElementById("adminCourses").textContent=courses.length;document.getElementById("adminMessages").textContent=chat.length;document.getElementById("adminBooks").textContent=books.length}
+function resetData(){if(!confirm("Reset all demo data?"))return;["scr_courses","scr_score","scr_accounts","scr_chat","scr_current","scr_questions","scr_books"].forEach(k=>localStorage.removeItem(k));location.reload()}
 if(current)showApp();
 </script>
 </body>
