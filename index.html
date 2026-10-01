@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>StudyConnect Rwanda</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:#f6f8fc;color:#172033}
+button,input,textarea,select{font:inherit}button{cursor:pointer;border:0}.hidden{display:none!important}
+.top{height:64px;background:#0b3b74;color:white;display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:20}
+.logo{font-size:21px;font-weight:800}.top button{background:transparent;color:white;padding:9px 10px;border-radius:8px}.top button:hover{background:#ffffff1a}
+.layout{display:flex;min-height:calc(100vh - 64px)}.side{width:240px;background:white;border-right:1px solid #e5e7eb;padding:18px 12px}.side button{width:100%;text-align:left;background:white;padding:12px;border-radius:9px;margin:3px 0;color:#344054}.side button.active,.side button:hover{background:#eaf2ff;color:#155eef;font-weight:700}
+main{flex:1;max-width:1250px;padding:25px;margin:auto;width:100%}.page{display:none}.page.active{display:block}
+.card{background:white;border:1px solid #eaecf0;border-radius:15px;padding:20px;margin-bottom:17px;box-shadow:0 4px 15px #1018280a}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}.stat{font-size:29px;font-weight:800;margin-top:7px}.muted{color:#667085}
+.btn{background:#155eef;color:white;padding:10px 15px;border-radius:9px}.btn.secondary{background:#eef2f6;color:#344054}.btn.green{background:#079455}.btn.red{background:#d92d20}
+input,textarea,select{width:100%;padding:11px;border:1px solid #d0d5dd;border-radius:9px;margin:5px 0 13px;outline:none}
+input:focus,textarea:focus,select:focus{border-color:#155eef}.badge{display:inline-block;padding:5px 9px;border-radius:20px;background:#e0f2fe;color:#075985;font-size:12px;font-weight:700}
+.course{transition:.15s}.course:hover{transform:translateY(-2px);box-shadow:0 8px 25px #10182815}.course h3{margin-bottom:7px}
+table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:11px;border-bottom:1px solid #eaecf0}
+.quizopt{display:block;width:100%;text-align:left;background:#f8fafc;border:1px solid #e4e7ec;color:#172033;padding:11px;border-radius:9px;margin:7px 0}.quizopt.selected{border:2px solid #155eef;background:#eef4ff}
+.chat{height:340px;overflow:auto;background:#f8fafc;padding:12px;border-radius:10px}.bubble{max-width:78%;background:#e5efff;padding:9px 12px;border-radius:12px;margin:8px 0}.bubble.mine{margin-left:auto;background:#d1fadf}
+.auth{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#0b3b74,#155eef);padding:20px}.authbox{background:white;max-width:450px;width:100%;padding:30px;border-radius:18px}
+.hero{background:linear-gradient(135deg,#0b3b74,#155eef);color:white;border-radius:18px;padding:28px;margin-bottom:18px}.hero .btn{background:white;color:#0b3b74}
+@media(max-width:760px){.side{display:none}.top{padding:0 12px}.top .desktop{display:none}main{padding:14px}.hero{padding:20px}}
+</style>
+</head>
+<body>
+
+<div id="auth" class="auth">
+<div class="authbox">
+<h1>📚 StudyConnect Rwanda</h1>
+<p class="muted">Learn online. Practice. Connect with teachers.</p>
+<label>Full name</label><input id="authName" placeholder="Your name">
+<label>Account type</label><select id="authRole"><option>Student</option><option>Teacher</option><option>Admin</option></select>
+<label>Password</label><input id="authPass" type="password" placeholder="Create a demo password">
+<button class="btn" style="width:100%" onclick="createAccount()">Create / Login</button>
+<p class="muted" style="font-size:12px">Prototype: accounts are stored only in this browser.</p>
+</div></div>
+
+<div id="app" class="hidden">
+<header class="top">
+<div class="logo">📚 StudyConnect Rwanda</div>
+<div>
+<span id="userMini"></span>
+<button onclick="logout()">Logout</button>
+</div>
+</header>
+<div class="layout">
+<aside class="side">
+<button onclick="openPage('dashboard')" id="nav-dashboard">🏠 Dashboard</button>
+<button onclick="openPage('courses')" id="nav-courses">📚 Courses</button>
+<button onclick="openPage('assignments')" id="nav-assignments">📝 Assignments</button>
+<button onclick="openPage('quiz')" id="nav-quiz">🧠 Quiz</button>
+<button onclick="openPage('messages')" id="nav-messages">💬 Messages</button>
+<button onclick="openPage('profile')" id="nav-profile">👤 Profile</button>
+<button onclick="openPage('teacher')" id="nav-teacher">👨‍🏫 Teacher tools</button>
+<button onclick="openPage('admin')" id="nav-admin">⚙️ Admin</button>
+</aside>
+
+<main>
+<section id="dashboard" class="page">
+<div class="hero"><h1 id="welcome"></h1><p>Welcome to your digital learning space.</p><button class="btn" onclick="openPage('courses')">Browse courses</button></div>
+<div class="grid">
+<div class="card"><div class="muted">Courses</div><div class="stat" id="statCourses">4</div></div>
+<div class="card"><div class="muted">Assignments</div><div class="stat" id="statAssign">3</div></div>
+<div class="card"><div class="muted">Latest score</div><div class="stat" id="statScore">0%</div></div>
+<div class="card"><div class="muted">Learning status</div><div class="stat" style="font-size:20px" id="statStatus">Starting</div></div>
+</div>
+<div class="card"><h2>🚀 Quick actions</h2><button class="btn" onclick="openPage('quiz')">Take quiz</button> <button class="btn secondary" onclick="openPage('assignments')">View assignments</button> <button class="btn secondary" onclick="openPage('messages')">Message teacher</button></div>
+</section>
+
+<section id="courses" class="page">
+<div class="card"><h2>📚 Courses & Lessons</h2><p class="muted">Choose a course to start learning.</p></div>
+<div id="courseGrid" class="grid"></div>
+</section>
+
+<section id="assignments" class="page">
+<div class="card"><h2>📝 Assignments</h2><p class="muted">Submit your work and track your status.</p></div>
+<div id="assignmentGrid"></div>
+</section>
+
+<section id="quiz" class="page">
+<div class="card"><h2>🧠 Practice Quiz</h2><p class="muted">Choose an answer for each question, then submit.</p><div id="quizBox"></div></div>
+</section>
+
+<section id="messages" class="page">
+<div class="card"><h2>💬 Student ↔ Teacher Chat</h2><div id="chat" class="chat"></div>
+<div style="display:flex;gap:8px;margin-top:10px"><input id="chatInput" placeholder="Write a message..." style="margin:0"><button class="btn" onclick="sendChat()">Send</button></div></div>
+</section>
+
+<section id="profile" class="page">
+<div class="card"><h2>👤 My Profile</h2><label>Name</label><input id="profileName"><label>Role</label><input id="profileRole" disabled><label>About me</label><textarea id="profileAbout" rows="4" placeholder="Tell your teacher about yourself"></textarea><button class="btn" onclick="saveProfile()">Save profile</button></div>
+</section>
+
+<section id="teacher" class="page">
+<div class="card"><h2>👨‍🏫 Teacher Tools</h2><p class="muted">Create and publish your own lessons.</p>
+<label>Course title</label><input id="newCourseTitle" placeholder="e.g. Algebra Basics">
+<label>Subject</label><input id="newCourseSubject" placeholder="Mathematics">
+<label>Lesson content</label><textarea id="newCourseContent" rows="5" placeholder="Write your lesson..."></textarea>
+<button class="btn green" onclick="publishCourse()">Publish course</button></div>
+<div class="card"><h3>Student performance</h3><table><thead><tr><th>Student</th><th>Role</th><th>Latest score</th></tr></thead><tbody id="resultsTable"></tbody></table></div>
+</section>
+
+<section id="admin" class="page">
+<div class="card"><h2>⚙️ Admin Panel</h2><p class="muted">Prototype controls for the platform owner.</p>
+<div class="grid">
+<div class="card"><b>Registered accounts</b><div class="stat" id="adminUsers">0</div></div>
+<div class="card"><b>Published courses</b><div class="stat" id="adminCourses">0</div></div>
+<div class="card"><b>Messages</b><div class="stat" id="adminMessages">0</div></div>
+</div>
+<button class="btn red" onclick="resetData()">Reset demo data</button>
+</div></section>
+</main></div></div>
+
+<script>
+const defaultCourses=[
+{title:"Mathematics: Quadratic Equations",subject:"Mathematics",teacher:"Demo Teacher",content:"A quadratic equation has the form ax² + bx + c = 0. Learn factoring, completing the square and the quadratic formula."},
+{title:"Physics: Electric Current",subject:"Physics",teacher:"Demo Teacher",content:"Electric current is the flow of electric charge. Voltage provides the push and resistance opposes current."},
+{title:"Chemistry: Acids and Bases",subject:"Chemistry",teacher:"Demo Teacher",content:"Acids generally have pH below 7, bases generally have pH above 7, and neutral substances are around pH 7."},
+{title:"English: Present Perfect",subject:"English",teacher:"Demo Teacher",content:"The present perfect uses have/has + past participle. Example: I have completed my homework."}
+];
+const assignments=[
+["Mathematics","Solve 2x + 6 = 14.","Find x."],
+["Physics","State Ohm's law.","Write the formula relating voltage, current and resistance."],
+["English","Write a present-perfect sentence.","Use have/has + past participle."]
+];
+const questions=[
+["What is 2 × 5?",["7","10","12","15"],1],
+["A neutral substance has approximately which pH?",["1","5","7","14"],2],
+["Choose the present perfect form.",["I finish","I finished","I have finished","I finishing"],2],
+["Ohm's law is:",["V = IR","V = I/R","I = VR","R = VI"],0],
+["What is 10 ÷ 2?",["2","4","5","8"],2]
+];
+let current=JSON.parse(localStorage.getItem("scr_current")||"null");
+let courses=JSON.parse(localStorage.getItem("scr_courses")||"null")||defaultCourses;
+let score=Number(localStorage.getItem("scr_score")||0);
+let accounts=JSON.parse(localStorage.getItem("scr_accounts")||"[]");
+let chat=JSON.parse(localStorage.getItem("scr_chat")||"[]");
+let answers={};
+
+function createAccount(){
+ let name=document.getElementById("authName").value.trim(),role=document.getElementById("authRole").value;
+ if(!name)return alert("Enter your name.");
+ let pass=document.getElementById("authPass").value;
+ if(!pass)return alert("Create a password.");
+ let found=accounts.find(a=>a.name.toLowerCase()===name.toLowerCase()&&a.role===role);
+ if(!found){found={name,role,about:""};accounts.push(found);localStorage.setItem("scr_accounts",JSON.stringify(accounts))}
+ current=found;localStorage.setItem("scr_current",JSON.stringify(current));showApp();
+}
+function showApp(){document.getElementById("auth").classList.add("hidden");document.getElementById("app").classList.remove("hidden");document.getElementById("userMini").textContent=current.name+" · "+current.role;applyRole();openPage("dashboard")}
+function logout(){localStorage.removeItem("scr_current");location.reload()}
+function applyRole(){
+ document.getElementById("nav-teacher").classList.toggle("hidden",current.role!=="Teacher"&&current.role!=="Admin");
+ document.getElementById("nav-admin").classList.toggle("hidden",current.role!=="Admin");
+ document.getElementById("nav-assignments").classList.toggle("hidden",current.role==="Admin");
+}
+function openPage(id){
+ document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+ document.getElementById(id).classList.add("active");
+ document.querySelectorAll(".side button").forEach(b=>b.classList.remove("active"));
+ let n=document.getElementById("nav-"+id);if(n)n.classList.add("active");
+ if(id==="dashboard")renderDashboard();if(id==="courses")renderCourses();if(id==="assignments")renderAssignments();if(id==="quiz")renderQuiz();if(id==="messages")renderChat();if(id==="profile")renderProfile();if(id==="teacher")renderTeacher();if(id==="admin")renderAdmin();
+}
+function renderDashboard(){document.getElementById("welcome").textContent="Hello, "+current.name+" 👋";document.getElementById("statCourses").textContent=courses.length;document.getElementById("statAssign").textContent=assignments.length;document.getElementById("statScore").textContent=score+"%";document.getElementById("statStatus").textContent=score>=50?"Progressing":"Starting"}
+function renderCourses(){document.getElementById("courseGrid").innerHTML=courses.map((c,i)=>`<div class="card course"><span class="badge">${c.subject}</span><h3>${c.title}</h3><p class="muted">Teacher: ${c.teacher}</p><p>${c.content}</p><button class="btn" onclick="openLesson(${i})">Open lesson</button></div>`).join("")}
+function openLesson(i){alert("Lesson opened:\\n\\n"+courses[i].title+"\\n\\n"+courses[i].content)}
+function renderAssignments(){document.getElementById("assignmentGrid").innerHTML=assignments.map((a,i)=>`<div class="card"><span class="badge">${a[0]}</span><h3>${a[1]}</h3><p>${a[2]}</p><textarea id="answer${i}" rows="3" placeholder="Type your answer..."></textarea><button class="btn" onclick="submitAssignment(${i})">Submit assignment</button> <span id="assignStatus${i}" class="muted"></span></div>`).join("")}
+function submitAssignment(i){let x=document.getElementById("answer"+i).value.trim();if(!x)return alert("Write your answer first.");localStorage.setItem("scr_assign_"+i,x);document.getElementById("assignStatus"+i).textContent="✓ Submitted"}
+function renderQuiz(){answers={};document.getElementById("quizBox").innerHTML=questions.map((q,i)=>`<div class="card"><b>${i+1}. ${q[0]}</b>${q[1].map((o,j)=>`<button class="quizopt" onclick="choose(${i},${j},this)">${o}</button>`).join("")}</div>`).join("")+`<button class="btn" onclick="finishQuiz()">Submit quiz</button> <b id="quizResult"></b>`}
+function choose(i,j,b){answers[i]=j;b.parentElement.querySelectorAll(".quizopt").forEach(x=>x.classList.remove("selected"));b.classList.add("selected")}
+function finishQuiz(){let correct=questions.reduce((n,q,i)=>n+(answers[i]===q[2]?1:0),0);score=Math.round(correct/questions.length*100);localStorage.setItem("scr_score",score);document.getElementById("quizResult").textContent="  Score: "+correct+"/"+questions.length+" ("+score+"%)";renderDashboard();renderTeacher()}
+function renderChat(){if(!chat.length)chat=[{name:"Teacher",text:"Welcome to StudyConnect Rwanda. How can I help you?"}];document.getElementById("chat").innerHTML=chat.map(m=>`<div class="bubble ${m.name===current.name?"mine":""}"><b>${m.name}</b><br>${m.text}</div>`).join("");let el=document.getElementById("chat");el.scrollTop=el.scrollHeight}
+function sendChat(){let t=document.getElementById("chatInput").value.trim();if(!t)return;chat.push({name:current.name,text:t});localStorage.setItem("scr_chat",JSON.stringify(chat));document.getElementById("chatInput").value="";renderChat()}
+function renderProfile(){document.getElementById("profileName").value=current.name;document.getElementById("profileRole").value=current.role;document.getElementById("profileAbout").value=current.about||""}
+function saveProfile(){current.name=document.getElementById("profileName").value.trim()||current.name;current.about=document.getElementById("profileAbout").value;localStorage.setItem("scr_current",JSON.stringify(current));let i=accounts.findIndex(a=>a.name===current.name);if(i>=0)accounts[i]=current;else accounts.push(current);localStorage.setItem("scr_accounts",JSON.stringify(accounts));document.getElementById("userMini").textContent=current.name+" · "+current.role;alert("Profile saved.")}
+function publishCourse(){if(current.role!=="Teacher"&&current.role!=="Admin")return alert("Only Teacher/Admin accounts can publish.");let t=document.getElementById("newCourseTitle").value.trim(),s=document.getElementById("newCourseSubject").value.trim(),c=document.getElementById("newCourseContent").value.trim();if(!t||!s||!c)return alert("Fill all fields.");courses.push({title:t,subject:s,teacher:current.name,content:c});localStorage.setItem("scr_courses",JSON.stringify(courses));document.getElementById("newCourseTitle").value=document.getElementById("newCourseSubject").value=document.getElementById("newCourseContent").value="";alert("Course published.");renderTeacher()}
+function renderTeacher(){let students=accounts.filter(a=>a.role==="Student");document.getElementById("resultsTable").innerHTML=(students.length?students:[{name:"No student account yet",role:"Student"}]).map(s=>`<tr><td>${s.name}</td><td>${s.role}</td><td>${score}%</td></tr>`).join("")}
+function renderAdmin(){document.getElementById("adminUsers").textContent=accounts.length;document.getElementById("adminCourses").textContent=courses.length;document.getElementById("adminMessages").textContent=chat.length}
+function resetData(){if(!confirm("Reset all demo data?"))return;["scr_courses","scr_score","scr_accounts","scr_chat","scr_current"].forEach(k=>localStorage.removeItem(k));location.reload()}
+if(current)showApp();
+</script>
+</body>
+</html>
